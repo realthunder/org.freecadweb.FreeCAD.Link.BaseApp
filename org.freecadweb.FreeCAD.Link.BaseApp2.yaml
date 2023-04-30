@@ -23,7 +23,7 @@ modules:
     build-commands:
       - python3 setup.py build -j 1 install --prefix=/app
     cleanup:
-      - /bin
+      # - /bin
       - /lib/python3.*/site-packages/numpy/tests
       - /lib/python3.*/site-packages/numpy/*/tests
     sources:
@@ -180,8 +180,8 @@ modules:
     builddir: true
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
-    cleanup:
-      - /bin
+    # cleanup:
+    #   - /bin
     sources:
       - type: archive
         url: https://download.osgeo.org/geos/geos-3.7.0.tar.bz2
@@ -192,8 +192,8 @@ modules:
     builddir: true
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
-    cleanup:
-      - /bin
+    # cleanup:
+    #   - /bin
     sources:
       - type: archive
         url: https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-4.6.1.tar.gz
@@ -244,7 +244,7 @@ modules:
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
     cleanup:
-      - /bin
+      # - /bin
       - /share/doc
     sources:
       - type: archive
@@ -267,9 +267,9 @@ modules:
     - -DRAPIDJSON_BUILD_TESTS=OFF
     - -DRAPIDJSON_BUILD_THIRDPARTY_GTEST=OFF
     cleanup:
-      - /include
-      - /lib/cmake
-      - /lib/pkgconfig
+      # - /include
+      # - /lib/cmake
+      # - /lib/pkgconfig
       - /share/doc
     sources:
       - type: archive
@@ -287,8 +287,8 @@ modules:
       - -DUSE_RAPIDJSON=ON
       - -DBUILD_RELEASE_DISABLE_EXCEPTIONS=OFF
       - -DBUILD_DOC_Overview=OFF
-    cleanup:
-      - /bin
+    # cleanup:
+    #   - /bin
     sources:
       - type: git
         url: https://gitlab.com/blobfish/occt.git/
@@ -311,9 +311,9 @@ modules:
   - name: cgal
     cleanup:
       - /include
-      - /lib/cmake
+      # - /lib/cmake
       - /share/man
-      - /bin
+      # - /bin
     buildsystem: cmake-ninja
     config-opts:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo

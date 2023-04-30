@@ -20,8 +20,8 @@ modules:
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
       - -DBUILD_TESTS=OFF
-    cleanup:
-      - /bin
+    # cleanup:
+    #   - /bin
     sources:
       - type: archive
         url: https://download.qt.io/official_releases/QtForPython/pyside2/PySide2-5.15.4-src/pyside-setup-opensource-src-5.15.4.tar.xz
@@ -36,8 +36,8 @@ modules:
   - name: swig
     config-opts:
       - --without-pcre
-    cleanup:
-      - '*'
+    # cleanup:
+    #   - '*'
     sources:
       - type: archive
         url: https://downloads.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz
@@ -54,8 +54,8 @@ modules:
   - name: eigen
     buildsystem: cmake-ninja
     builddir: true
-    cleanup:
-      - '*'
+    # cleanup:
+    #   - '*'
     sources:
       - type: archive
         url: https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.bz2
@@ -66,7 +66,7 @@ modules:
     build-options:
       no-debuginfo: true
     cleanup:
-      - /bin
+      # - /bin
       - /man
     post-install:
       # Needed for graphviz
@@ -83,7 +83,7 @@ modules:
     make-install-args:
       - install-private-headers
     cleanup:
-      - /bin
+      # - /bin
       - /man
     sources:
       - type: archive
@@ -105,7 +105,7 @@ modules:
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
     cleanup:
-      - /bin
+      # - /bin
       - /share/doc
     sources:
       - type: archive
@@ -113,8 +113,8 @@ modules:
         sha256: 6daca3b23364d8d883dc77a73f681242f69389e3564543287ed3d073007e0a8e
 
   - name: openmpi
-    cleanup:
-      - /bin
+    # cleanup:
+    #   - /bin
     sources:
       - type: archive
         url: https://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.1.tar.bz2
@@ -125,8 +125,8 @@ modules:
     builddir: true
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
-    cleanup:
-      - /bin
+    # cleanup:
+    #   - /bin
     sources:
       - type: archive
         url: https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.bz2
@@ -138,7 +138,7 @@ modules:
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
     cleanup:
-      - /bin
+      # - /bin
       - /share/doc
     sources:
       - type: archive
