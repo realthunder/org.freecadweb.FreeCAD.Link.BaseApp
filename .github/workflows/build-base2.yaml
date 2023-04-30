@@ -58,6 +58,9 @@ jobs:
     needs: flatter
 
     steps:
+      - name: Download assets
+        uses: actions/download-artifact@v3
+
       - name: Prepare assets
         run: |
           tag=${{ github.ref_name }}

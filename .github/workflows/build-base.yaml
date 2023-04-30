@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  flatter:
-    name: Flatter
+  build:
+    name: Build bundle
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/andyholmes/flatter/kde:5.15-22.08
@@ -46,9 +46,12 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    needs: flatter
+    needs: build
 
     steps:
+      - name: Download assets
+        uses: actions/download-artifact@v3
+
       - name: Prepare assets
         run: |
           tag=${{ github.ref_name }}
