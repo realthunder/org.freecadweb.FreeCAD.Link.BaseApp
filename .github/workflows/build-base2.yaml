@@ -14,8 +14,6 @@ jobs:
     container:
       image: ghcr.io/andyholmes/flatter/kde:5.15-22.08
       options: --privileged
-    outputs:
-      repository: ${{ steps.flatpak.outputs.repository }}
 
     strategy:
       matrix:
@@ -64,8 +62,8 @@ jobs:
         run: |
           tag=${{ github.ref_name }}
           tag=${tag%base}
-          name=`echo ${{ needs.flatter.outputs.repository }}/*.flatpak`
-          echo "RELEASE_ASSETS=${name%.flatpak}"'*BaseApp2.flatpak' >> $GITHUB_ENV
+          name=org.freecadweb.FreeCAD.Link.BaseApp2.flatpak
+          echo "RELEASE_ASSETS=$name" >> $GITHUB_ENV
           echo "RELEASE_NAME=$tag" >> $GITHUB_ENV
 
       - name: Delete old release assets
