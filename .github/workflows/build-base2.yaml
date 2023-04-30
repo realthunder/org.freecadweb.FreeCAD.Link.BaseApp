@@ -29,17 +29,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          repository: realthunder/org.freecadweb.FreeCAD.Link
+          repository: realthunder/org.freecadweb.FreeCAD.Link.BaseApp
 
       - name: Install BaseApp
         run: |
           tag=${{ github.ref_name }}
           tag=${tag%base}
-          name=org.freecadweb.FreeCAD.Link
+          name=org.freecadweb.FreeCAD.Link.BaseApp
           url=https://github.com/realthunder/$name/releases/download/$tag/$name
           if ! which wget; then yum install wget -y; fi
-          wget $url.BaseApp.flatpak
-          flatpak install $name.BaseApp.flatpak
+          wget $url.flatpak
+          flatpak install $name.flatpak
 
       - name: Build
         id: flatpak
