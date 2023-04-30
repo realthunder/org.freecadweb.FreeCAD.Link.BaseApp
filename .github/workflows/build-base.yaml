@@ -3,13 +3,13 @@ name: Build BaseApp
 on:
   push:
     tags:
-      - "*base"
+      - "*base*"
 
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build bundle
+    name: Build
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/andyholmes/flatter/kde:5.15-22.08
@@ -19,30 +19,43 @@ jobs:
       matrix:
         arch: [x86_64]
       fail-fast: false
-      # Only one job at a time can use the shared repository cache
       max-parallel: 1
 
     steps:
-      # Checkout a repository with Flatpak manifests
       - name: Checkout
         uses: actions/checkout@v3
         with:
           repository: realthunder/org.freecadweb.FreeCAD.Link.BaseApp
-          submodules: true
 
-      - name: Build
+      - name: Install BaseApp
+        if: ${{ ! endsWith(github.ref_name, 'base') }}
+        run: |
+          tag=${{ github.ref_name }}
+          index=${tag#*base}
+          tag=${tag%base*}
+          name=org.freecadweb.FreeCAD.Link.BaseApp
+          echo "MANIFEST=$name$index.yaml" >> $GITHUB_ENV
+          echo "CACHE_KEY=FreeCAD-Link-BaseApp$index" >> $GITHUB_ENV
+          url=https://github.com/realthunder/$name/releases/download/$tag/$name
+          if "$index" = 3; then
+            url=${url}2
+          fi
+          if ! which wget; then yum install wget -y; fi
+          wget -q $url.flatpak
+          flatpak install -y *.flatpak
+
+      - name: Build bundle
         id: flatpak
         uses: andyholmes/flatter@main
         with:
           files: |
-            org.freecadweb.FreeCAD.Link.BaseApp.yaml
+            ${{env.MANIFEST}}
           arch: ${{ matrix.arch }}
           upload-bundles: true
-          cache-key: FreeCAD-Link-BaseApp
+          cache-key: ${{env.CACHE_KEY}}
           flatpak-builder-args: |
             --install-deps-from=flathub
 
-  # See "Github Pages" below
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
@@ -54,9 +67,10 @@ jobs:
 
       - name: Prepare assets
         run: |
+          ls -l
           tag=${{ github.ref_name }}
-          tag=${tag%base2}
-          name=org.freecadweb.FreeCAD.Link.BaseApp.flatpak
+          tag=${tag%base*}
+          name=`echo *.flatpak`
           echo "RELEASE_ASSETS=$name" >> $GITHUB_ENV
           echo "RELEASE_NAME=$tag" >> $GITHUB_ENV
 

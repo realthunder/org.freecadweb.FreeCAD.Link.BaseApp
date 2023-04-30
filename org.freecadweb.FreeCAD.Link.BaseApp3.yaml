@@ -1,0 +1,178 @@
+app-id: org.freecadweb.FreeCAD.Link.BaseApp3
+branch: '5.15-22.08'
+base: org.freecadweb.FreeCAD.Link.BaseApp2
+base-version: '5.15-22.08'
+runtime: org.kde.Platform
+runtime-version: '5.15-22.08'
+sdk: org.kde.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.llvm14
+modules:
+  - name: mpfr
+    sources:
+      - type: archive
+        url: https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.5.tar.xz
+        sha256: 015fde82b3979fbe5f83501986d328331ba8ddf008c1ff3da3c238f49ca062bc
+  - name: gmp
+    config-opts:
+      - --enable-fat
+    sources:
+      - type: archive
+        url: https://gmplib.org/download/gmp/gmp-6.2.1.tar.bz2
+        sha256: eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c
+  - name: cgal
+    cleanup:
+      - /include
+      # - /lib/cmake
+      - /share/man
+      # - /bin
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DCGAL_HEADER_ONLY=ON
+    sources:
+      - type: archive
+        url: https://github.com/CGAL/cgal/releases/download/v5.3.1/CGAL-5.3.1.tar.xz
+        sha256: ab76633b023d72ea3ca9ad22e2fa39ed3b5c8fb4e2c091a78035fabb5eb3fccf
+
+  - name: IfcOpenShell
+    buildsystem: cmake-ninja
+    builddir: true
+    subdir: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DBUILD_EXAMPLES=OFF
+      - -DBUILD_GEOMSERVER=OFF
+      - -DBUILD_CONVERT=OFF
+      - -DENABLE_BUILD_OPTIMIZATIONS=ON
+      - -DCGAL_INCLUDE_DIR=/app/include
+      - -DOCC_INCLUDE_DIR=/app/include/opencascade
+      - -DOCC_LIBRARY_DIR=/app/lib
+      - -DGMP_LIBRARY_DIR=/app/lib
+      - -DMPFR_LIBRARY_DIR=/app/lib
+      - -DHDF5_INCLUDE_DIR=/app/include
+      - -DHDF5_LIBRARY_DIR=/app/lib
+      - -DCOLLADA_SUPPORT=OFF
+      - -DLIBXML2_INCLUDE_DIR=/usr/include/libxml2
+    build-options:
+      arch:
+        # config-opts with meson doesn't do shell variable substitutions
+        # so we can't use $FLATPAK_ARCH
+        x86_64:
+          config-opts:
+            - -DLIBXML2_LIBRARIES=/usr/lib/x86_64-linux-gnu/libxml2.so
+        aarch64:
+          config-opts:
+            - -DLIBXML2_LIBRARIES=/usr/lib/aarch64-linux-gnu/libxml2.so
+    build-commands:
+      - sed -i 's|/usr|/app|g' ifcwrap/cmake_install.cmake
+      - sed -i 's|/usr|/app|g' ifcwrap/cmake_install.cmake
+    sources:
+      - type: git
+        url: https://github.com/IfcOpenShell/IfcOpenShell.git
+        tag: v0.7.0a2
+        commit: a11b51c971f2c3013855e13ff1929fe712ddc7de
+      - type: patch
+        path: patches/IfcOpenShell-hdf5.patch
+
+  - name: lapack
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: archive
+        url: http://deb.debian.org/debian/pool/main/l/lapack/lapack_3.8.0.orig.tar.gz
+        sha256: deb22cc4a6120bff72621155a9917f485f96ef8319ac074a7afbc68aab88bcf6
+        mirror-urls:
+          - http://www.netlib.org/lapack/lapack-3.8.0.tar.gz # can be slow
+
+  - name: arpack
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+    build-options:
+      env:
+        FFLAGS: -fallow-argument-mismatch
+        FCFLAGS: -fallow-argument-mismatch
+    sources:
+      - type: archive
+        url: https://github.com/opencollab/arpack-ng/archive/3.6.3.tar.gz
+        sha256: 64f3551e5a2f8497399d82af3076b6a33bf1bc95fc46bbcabe66442db366f453
+
+  - name: spooles
+    buildsystem: simple
+    build-commands:
+      - make lib
+      - make -C MT/src
+      - install -Dt /app/lib *.a MT/src/*.a
+      - for f in $(find -name '*.h'); do install -Dt "/app/include/$(dirname "$f")" "$f"; done
+    sources:
+      - type: archive
+        url:  http://deb.debian.org/debian/pool/main/s/spooles/spooles_2.2.orig.tar.gz
+        sha256: a84559a0e987a1e423055ef4fdf3035d55b65bbe4bf915efaa1a35bef7f8c5dd
+        strip-components: 0
+        mirror-urls:
+          - http://www.netlib.org/linalg/spooles/spooles.2.2.tgz # can be slow
+      - type: patch
+        path: patches/spooles-gcc.patch
+
+  - name: OpenBLAS
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: archive
+        url: https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz
+        sha256: 17d4677264dfbc4433e97076220adc79b050e4f8a083ea3f853a53af253bc380
+
+  - name: calculix-ccx
+    buildsystem: simple
+    build-commands:
+      - make -C ccx_*/src -f Makefile_MT -j $FLATPAK_BUILDER_N_JOBS
+      - install -m0755 ccx_*/src/ccx_*_MT /app/bin/ccx
+    sources:
+      - type: archive
+        url: http://www.dhondt.de/ccx_2.19.src.tar.bz2
+        sha256: c75a69685811e7996c9428b491c82f0eff777cc9a0999f469d10156d75f26d07
+        strip-components: 2
+      - type: patch
+        path: patches/calculix-cxx-paths.patch
+
+  - name: gmsh
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    cleanup:
+      - /share/doc
+    sources:
+      - type: archive
+        url: https://gmsh.info/src/gmsh-4.9.5-source.tgz
+        sha256: ffd64900844208719c88d91a66c281889023132b7a9e282c51548cb9f6f3ad44
+
+  - name: python3-ply
+    buildsystem: simple
+    build-commands:
+      - pip3 install --exists-action=i --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST} ply==3.11
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/a3/58/35da89ee790598a0700ea49b2a66594140f44dec458c07e8e3d4979137fc/ply-3.11-py2.py3-none-any.whl
+        sha256: 096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce
+
+  # For the FEM workbench.
+  - python3-pyyaml.json
+  - python3-Pillow.json
+
+  # For add-on manager
+  - name: python3-pip
+    buildsystem: simple
+    build-commands:
+      # ignore installed because it's in the SDK
+      - pip3 install --exists-action=i --ignore-installed --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST} "pip" --no-build-isolation
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/1f/2c/d9626f045e7b49a6225c6b09257861f24da78f4e5f23af2ddbdf852c99b8/pip-22.2.2-py3-none-any.whl
+        sha256: b61a374b5bc40a6e982426aede40c9b5a08ff20e640f5b56977f4f91fed1e39a
