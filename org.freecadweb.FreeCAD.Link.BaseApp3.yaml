@@ -8,6 +8,18 @@ sdk: org.kde.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.llvm14
 modules:
+  - name: OpenBLAS
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DDYNAMIC_ARCH=ON
+      - -DCORE=PRESCOTT
+      - -DTARGET=PRESCOTT
+    sources:
+      - type: archive
+        url: https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz
+        sha256: 17d4677264dfbc4433e97076220adc79b050e4f8a083ea3f853a53af253bc380
   - name: mpfr
     sources:
       - type: archive
@@ -120,16 +132,6 @@ modules:
           - http://www.netlib.org/linalg/spooles/spooles.2.2.tgz # can be slow
       - type: patch
         path: patches/spooles-gcc.patch
-
-  - name: OpenBLAS
-    buildsystem: cmake-ninja
-    builddir: true
-    config-opts:
-      - -DCMAKE_BUILD_TYPE=Release
-    sources:
-      - type: archive
-        url: https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz
-        sha256: 17d4677264dfbc4433e97076220adc79b050e4f8a083ea3f853a53af253bc380
 
   - name: calculix-ccx
     buildsystem: simple
