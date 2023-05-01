@@ -54,6 +54,9 @@ modules:
       - -DHDF5_LIBRARY_DIR=/app/lib
       - -DCOLLADA_SUPPORT=OFF
       - -DLIBXML2_INCLUDE_DIR=/usr/include/libxml2
+    no-parallel-make: true # it seems the compilation consumes too much memory
+    make-args:
+      - -j 1
     build-options:
       arch:
         # config-opts with meson doesn't do shell variable substitutions
