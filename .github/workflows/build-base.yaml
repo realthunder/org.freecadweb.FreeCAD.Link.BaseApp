@@ -30,6 +30,7 @@ jobs:
       - name: Install BaseApp
         if: ${{ ! endsWith(github.ref_name, 'base') }}
         run: |
+          set -x
           tag=${{ github.ref_name }}
           index=${tag#*base}
           tag=${tag%base*}
@@ -37,7 +38,7 @@ jobs:
           echo "MANIFEST=$name$index.yaml" >> $GITHUB_ENV
           echo "CACHE_KEY=FreeCAD-Link-BaseApp$index" >> $GITHUB_ENV
           url=https://github.com/realthunder/$name/releases/download/$tag/$name
-          if "$index" = 3; then
+          if [ "$index" = 3 ]; then
             url=${url}2
           fi
           if ! which wget; then yum install wget -y; fi
@@ -67,9 +68,9 @@ jobs:
 
       - name: Prepare assets
         run: |
-          ls -l
           tag=${{ github.ref_name }}
           tag=${tag%base*}
+          mv org.freecadweb.FreeCAD.Link.BaseApp*/*.flatpak .
           name=`echo *.flatpak`
           echo "RELEASE_ASSETS=$name" >> $GITHUB_ENV
           echo "RELEASE_NAME=$tag" >> $GITHUB_ENV
