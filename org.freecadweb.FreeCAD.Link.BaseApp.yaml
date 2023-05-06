@@ -8,9 +8,13 @@ sdk: org.kde.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.llvm14
 modules:
-
-  - shared-modules/glu/glu-9.json
-
+  - name: glu
+    config-opts:
+      - --disable-static
+    sources:
+      - type: archive
+        url: https://mesa.freedesktop.org/archive/glu/glu-9.0.2.tar.xz
+        sha256: 6e7280ff585c6a1d9dfcdf2fca489251634b3377bfc33c29e4002466a38d02d4
   - name: pyside2
     buildsystem: cmake-ninja
     builddir: true
