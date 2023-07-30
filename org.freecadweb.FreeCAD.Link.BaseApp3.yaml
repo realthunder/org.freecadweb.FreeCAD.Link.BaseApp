@@ -183,19 +183,3 @@ modules:
       - type: file
         url: https://files.pythonhosted.org/packages/1f/2c/d9626f045e7b49a6225c6b09257861f24da78f4e5f23af2ddbdf852c99b8/pip-22.2.2-py3-none-any.whl
         sha256: b61a374b5bc40a6e982426aede40c9b5a08ff20e640f5b56977f4f91fed1e39a
-
-  - shared-modules/glu/glu-9.json
-
-  - name: libfmt
-    buildsystem: cmake-ninja
-    builddir: true
-    config-opts:
-      - -DCMAKE_BUILD_TYPE=Release
-      - -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE
-    cleanup:
-      - /share/doc
-    sources:
-      - type: archive
-        url: https://github.com/fmtlib/fmt/archive/refs/tags/9.1.0.zip
-        md5: e6754011ff56bfc37631fcc90961e377
-
