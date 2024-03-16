@@ -72,6 +72,8 @@ jobs:
         run: |
           tag=${{ github.ref_name }}
           tag=${tag%base*}
+          ls -l
+          ls -l org.freecadweb.FreeCAD.Link.BaseApp
           mv org.freecadweb.FreeCAD.Link.BaseApp*/*.flatpak .
           name=`echo *.flatpak`
           echo "RELEASE_ASSETS=$name" >> $GITHUB_ENV
