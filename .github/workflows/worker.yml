@@ -1,0 +1,105 @@
+name: Build BaseApp
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+      os: 
+        default: "self-hosted-linux"
+        type: string
+      arch:
+        default: "x86_64"
+        type: string
+
+jobs:
+  build:
+    name: Build
+    # runs-on: ubuntu-lastest
+    runs-on: ${{ inputs.os }}
+    container:
+      image: ghcr.io/realthunder/flatter/kde:5.15-22.08
+      options: --privileged
+
+    strategy:
+      matrix:
+        arch: [x86_64]
+      fail-fast: false
+      max-parallel: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: realthunder/org.freecadweb.FreeCAD.Link.BaseApp
+          submodules: true
+
+      - name: Install BaseApp
+        if: ${{ ! endsWith(github.ref_name, 'base') }}
+        run: |
+          set -x
+          tag=${{ inputs.ref }}
+          index=${tag#*base}
+          tag=${tag%base*}
+          name=org.freecadweb.FreeCAD.Link.BaseApp
+          echo "MANIFEST=$name$index.yaml" >> $GITHUB_ENV
+          echo "CACHE_KEY=FreeCAD-Link-BaseApp$index" >> $GITHUB_ENV
+          url=https://github.com/realthunder/$name/releases/download/$tag/$name
+          if [ "$index" -gt 2 ]; then
+            url=${url}$((index-1))
+          fi
+          if ! which wget; then yum install wget -y; fi
+          wget -q $url.flatpak
+          flatpak install -y *.flatpak
+
+      - name: Build bundle
+        id: flatpak
+        uses: realthunder/flatter@main
+        with:
+          files: |
+            ${{env.MANIFEST}}
+          arch: ${{ matrix.arch }}
+          upload-bundles: true
+          cache-key: ${{env.CACHE_KEY}}
+          flatpak-builder-args: |
+            --install-deps-from=flathub
+
+  deploy:
+    name: Deploy
+    runs-on: ${{ inputs.os }}
+    needs: build
+
+    steps:
+      - name: Download assets
+        uses: actions/download-artifact@v3
+
+      - name: Prepare assets
+        run: |
+          tag=${{ inputs.ref }}
+          tag=${tag%base*}
+          mv org.freecadweb.FreeCAD.Link.BaseApp*/*.flatpak .
+          name=`echo *.flatpak`
+          echo "RELEASE_ASSETS=$name" >> $GITHUB_ENV
+          echo "RELEASE_NAME=$tag" >> $GITHUB_ENV
+
+      - name: Delete old release assets
+        uses: realthunder/delete-release-assets@v1
+        with:
+          fail-if-no-assets: false
+          fail-if-no-release: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: realthunder/org.freecadweb.FreeCAD.Link.BaseApp
+          tag: ${{ env.RELEASE_NAME }}
+          assets: |
+              ${{ env.RELEASE_ASSETS }}
+
+      - name: Upload release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: realthunder/action-gh-release@v1
+        with:
+          repository: realthunder/org.freecadweb.FreeCAD.Link.BaseApp
+          files: ${{ env.RELEASE_ASSETS }}
+          name: ${{ env.RELEASE_NAME }}
+          tag_name: ${{ env.RELEASE_NAME }}
+          token: ${{ secrets.GITHUB_TOKEN }}

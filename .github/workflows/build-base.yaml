@@ -9,91 +9,16 @@ on:
 
 jobs:
   build:
-    name: Build
-    # runs-on: ubuntu-lastest
-    runs-on: "self-hosted-linux"
-    container:
-      image: ghcr.io/realthunder/flatter/kde:5.15-22.08
-      options: --privileged
-
     strategy:
       matrix:
+        os: [self-hosted-linux]
         arch: [x86_64]
       fail-fast: false
+      # Only one job at a time can use the shared repository cache
       max-parallel: 1
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: realthunder/org.freecadweb.FreeCAD.Link.BaseApp
-          submodules: true
-
-      - name: Install BaseApp
-        if: ${{ ! endsWith(github.ref_name, 'base') }}
-        run: |
-          set -x
-          tag=${{ github.ref_name }}
-          index=${tag#*base}
-          tag=${tag%base*}
-          name=org.freecadweb.FreeCAD.Link.BaseApp
-          echo "MANIFEST=$name$index.yaml" >> $GITHUB_ENV
-          echo "CACHE_KEY=FreeCAD-Link-BaseApp$index" >> $GITHUB_ENV
-          url=https://github.com/realthunder/$name/releases/download/$tag/$name
-          if [ "$index" -gt 2 ]; then
-            url=${url}$((index-1))
-          fi
-          if ! which wget; then yum install wget -y; fi
-          wget -q $url.flatpak
-          flatpak install -y *.flatpak
-
-      - name: Build bundle
-        id: flatpak
-        uses: andyholmes/flatter@main
-        with:
-          files: |
-            ${{env.MANIFEST}}
-          arch: ${{ matrix.arch }}
-          upload-bundles: true
-          cache-key: ${{env.CACHE_KEY}}
-          flatpak-builder-args: |
-            --install-deps-from=flathub
-
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-20.04
-    needs: build
-
-    steps:
-      - name: Download assets
-        uses: actions/download-artifact@v3
-
-      - name: Prepare assets
-        run: |
-          tag=${{ github.ref_name }}
-          tag=${tag%base*}
-          ls -l
-          ls -l org.freecadweb.FreeCAD.Link.BaseApp
-          mv org.freecadweb.FreeCAD.Link.BaseApp*/*.flatpak .
-          name=`echo *.flatpak`
-          echo "RELEASE_ASSETS=$name" >> $GITHUB_ENV
-          echo "RELEASE_NAME=$tag" >> $GITHUB_ENV
-
-      - name: Delete old release assets
-        uses: realthunder/delete-release-assets@v1
-        with:
-          fail-if-no-assets: false
-          fail-if-no-release: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ env.RELEASE_NAME }}
-          assets: |
-              ${{ env.RELEASE_ASSETS }}
-
-      - name: Upload release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: realthunder/action-gh-release@v1
-        with:
-          files: ${{ env.RELEASE_ASSETS }}
-          name: ${{ env.RELEASE_NAME }}
-          tag_name: ${{ env.RELEASE_NAME }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+    uses: ./.github/workflows/worker.yml
+    with:
+      ref: ${{ github.ref_name }}
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
