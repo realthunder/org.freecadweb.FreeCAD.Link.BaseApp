@@ -10,9 +10,10 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    # runs-on: ubuntu-lastest
+    runs-on: "self-hosted-linux"
     container:
-      image: ghcr.io/andyholmes/flatter/kde:5.15-22.08
+      image: ghcr.io/realthunder/flatter/kde:5.15-22.08
       options: --privileged
 
     strategy:
