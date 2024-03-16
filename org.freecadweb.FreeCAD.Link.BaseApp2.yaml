@@ -304,7 +304,7 @@ modules:
         sha256: eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c
   - name: cgal
     cleanup:
-      - /include
+      # - /include
       # - /lib/cmake
       - /share/man
       # - /bin
