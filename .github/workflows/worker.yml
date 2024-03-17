@@ -18,6 +18,8 @@ jobs:
     name: Build
     # runs-on: ubuntu-lastest
     runs-on: ${{ inputs.os }}
+    outputs:
+      asset-name: ${{ steps.setup.outputs.ASSET_NAME }}
     container:
       image: ghcr.io/realthunder/flatter/kde:5.15-22.08
       options: --privileged
@@ -36,6 +38,7 @@ jobs:
           submodules: true
 
       - name: Install BaseApp
+        id: setup
         if: ${{ ! endsWith(github.ref_name, 'base') }}
         run: |
           set -x
@@ -44,6 +47,7 @@ jobs:
           tag=${tag%base*}
           name=org.freecadweb.FreeCAD.Link.BaseApp
           echo "MANIFEST=$name$index.yaml" >> $GITHUB_ENV
+          echo "ASSET_NAME=$name$index.flatpak" >> $GITHUB_OUTPUT
           echo "CACHE_KEY=FreeCAD-Link-BaseApp$index" >> $GITHUB_ENV
           url=https://github.com/realthunder/$name/releases/download/$tag/$name
           if [ "$index" -gt 2 ]; then
@@ -69,6 +73,8 @@ jobs:
     name: Deploy
     runs-on: ${{ inputs.os }}
     needs: build
+    env:
+        ASSET_NAME: ${{ needs.build.outputs.asset-name }} 
 
     steps:
       - name: Download assets
@@ -78,9 +84,7 @@ jobs:
         run: |
           tag=${{ inputs.ref }}
           tag=${tag%base*}
-          mv org.freecadweb.FreeCAD.Link.BaseApp*/*.flatpak .
-          name=`echo *.flatpak`
-          echo "RELEASE_ASSETS=$name" >> $GITHUB_ENV
+          mv org.freecadweb.FreeCAD.Link.BaseApp/${{ env.ASSET_NAME }} .
           echo "RELEASE_NAME=$tag" >> $GITHUB_ENV
 
       - name: Delete old release assets
@@ -92,14 +96,14 @@ jobs:
           repository: realthunder/org.freecadweb.FreeCAD.Link.BaseApp
           tag: ${{ env.RELEASE_NAME }}
           assets: |
-              ${{ env.RELEASE_ASSETS }}
+              ${{ env.ASSET_NAME }}
 
       - name: Upload release
         if: startsWith(github.ref, 'refs/tags/')
         uses: realthunder/action-gh-release@v1
         with:
           repository: realthunder/org.freecadweb.FreeCAD.Link.BaseApp
-          files: ${{ env.RELEASE_ASSETS }}
+          files: ${{ env.ASSET_NAME }}
           name: ${{ env.RELEASE_NAME }}
           tag_name: ${{ env.RELEASE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
