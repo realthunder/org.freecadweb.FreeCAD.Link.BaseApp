@@ -77,14 +77,15 @@ jobs:
         ASSET_NAME: ${{ needs.build.outputs.asset-name }} 
 
     steps:
-      - name: Download assets
-        uses: actions/download-artifact@v3
+      # - name: Download assets
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: ${{ env.ASSET_NAME }}
 
       - name: Prepare assets
         run: |
           tag=${{ inputs.ref }}
           tag=${tag%base*}
-          mv org.freecadweb.FreeCAD.Link.BaseApp/${{ env.ASSET_NAME }} .
           echo "RELEASE_NAME=$tag" >> $GITHUB_ENV
 
       - name: Delete old release assets
