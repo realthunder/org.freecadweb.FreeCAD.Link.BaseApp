@@ -37,25 +37,25 @@ jobs:
           repository: realthunder/org.freecadweb.FreeCAD.Link.BaseApp
           submodules: true
 
-      - name: Install BaseApp
-        id: setup
-        if: ${{ ! endsWith(github.ref_name, 'base') }}
-        run: |
-          set -x
-          tag=${{ inputs.ref }}
-          index=${tag#*base}
-          tag=${tag%base*}
-          name=org.freecadweb.FreeCAD.Link.BaseApp
-          echo "MANIFEST=$name$index.yaml" >> $GITHUB_ENV
-          echo "ASSET_NAME=$name$index.flatpak" >> $GITHUB_OUTPUT
-          echo "CACHE_KEY=FreeCAD-Link-BaseApp$index" >> $GITHUB_ENV
-          url=https://github.com/realthunder/$name/releases/download/20230430/$name
-          if [ "$index" -gt 2 ]; then
-            url=${url}$((index-1))
-          fi
-          if ! which wget; then yum install wget -y; fi
-          wget -q $url.flatpak
-          flatpak install -y *.flatpak
+      # - name: Install BaseApp
+      #   id: setup
+      #   if: ${{ ! endsWith(github.ref_name, 'base') }}
+      #   run: |
+      #     set -x
+      #     tag=${{ inputs.ref }}
+      #     index=${tag#*base}
+      #     tag=${tag%base*}
+      #     name=org.freecadweb.FreeCAD.Link.BaseApp
+      #     echo "MANIFEST=$name$index.yaml" >> $GITHUB_ENV
+      #     echo "ASSET_NAME=$name$index.flatpak" >> $GITHUB_OUTPUT
+      #     echo "CACHE_KEY=FreeCAD-Link-BaseApp$index" >> $GITHUB_ENV
+      #     url=https://github.com/realthunder/$name/releases/download/20230430/$name
+      #     if [ "$index" -gt 1 ]; then
+      #       url=${url}$((index-1)).flatpak
+      #     fi
+      #     if ! which wget; then yum install wget -y; fi
+      #     wget -q $url.flatpak
+      #     flatpak install -y *.flatpak
 
       - name: Build bundle
         id: flatpak
