@@ -69,6 +69,11 @@ jobs:
           flatpak-builder-args: |
             --install-deps-from=flathub
 
+      - uses: actions/upload-artifact@v4
+        with:
+            name: ${{ env.ASSET_NAME }}-${{ matrix.os }}-${{ strategy.job-index }}
+            path: ${{ env.ASSET_NAME }}
+
   deploy:
     name: Deploy
     runs-on: ${{ inputs.os }}
